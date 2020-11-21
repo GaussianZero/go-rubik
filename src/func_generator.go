@@ -42,6 +42,10 @@ func main() {
 				nextToken += "D()"
 			case "B":
 				nextToken += "B()"
+			case "M":
+				nextToken += "M()"
+			case "L":
+				nextToken += "L()"
 			case "r":
 				nextToken += "Rs()"
 			case "u":
@@ -52,6 +56,8 @@ func main() {
 				nextToken += "Ds()"
 			case "b":
 				nextToken += "Bs()"
+			case "l":
+				nextToken += "Ls()"
 			case "2":
 				//fmt.Println("squaring...", nextToken)
 				nextToken = nextToken + "." + nextToken
@@ -67,16 +73,17 @@ func main() {
 	}
 	
 	// reverse the algo
-	for _, token := range outputTokens {
-		fmt.Printf("%s", token)
-	}
-	fmt.Println()
+	// for _, token := range outputTokens {
+	// 	fmt.Printf("%s", token)
+	// }
+	// fmt.Println()
 	for i := range outputTokens {
 		token := outputTokens[len(outputTokens) - i - 1]
 		rToken := reverseToken(token)
-		fmt.Printf("reverse[ %s ] = %s\n", token, rToken)
+		//fmt.Printf("reverse[ %s ] = %s\n", token, rToken)
 		outputScramble += rToken
 	}
+	outputScramble = outputScramble[:len(outputScramble)-1]
 
 	fmt.Println(outputScramble + "\n\treturn c\n}\n")
 	
