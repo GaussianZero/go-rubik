@@ -346,3 +346,77 @@ func (cube Cube) Rc() Cube {
 	}
 	return cube.exchange(pairs).rotateLeft(18)
 }
+
+// Represents a "Middle" move
+func (cube Cube) M() Cube {
+	pairs := []*Pair{
+		&Pair{1, 10}, &Pair{4,13}, &Pair{7, 16}, // done
+		&Pair{10, 46}, &Pair{13, 49}, &Pair{16, 52}, // done
+		&Pair{46, 34}, &Pair{49, 31}, &Pair{52, 28}, // done
+		&Pair{28, 7}, &Pair{31, 4}, &Pair{34, 1}, // done
+	}
+	return cube.exchange(pairs)
+}
+
+// Represents a "Middle" move
+func (cube Cube) Mc() Cube {
+	pairs := []*Pair{
+		&Pair{1, 34}, &Pair{4, 31}, &Pair{7, 28},
+		&Pair{28, 52}, &Pair{31, 49}, &Pair{34, 46},
+		&Pair{46, 10}, &Pair{49, 13}, &Pair{52, 16},
+		&Pair{10, 1}, &Pair{13, 4}, &Pair{16, 7},
+	}
+	return cube.exchange(pairs)
+}
+
+func (cube Cube) S() Cube {
+	pairs := []*Pair{
+		&Pair{3, 19}, &Pair{4, 22}, &Pair{5, 25}, // done
+		&Pair{19, 50}, &Pair{22, 49}, &Pair{25, 48}, // done
+		&Pair{48, 37}, &Pair{49, 40}, &Pair{50, 43}, // done
+		&Pair{37, 5}, &Pair{40, 4}, &Pair{43, 3}, // done
+	}
+	return cube.exchange(pairs)
+}
+
+func (cube Cube) Sc() Cube {
+	pairs := []*Pair{
+		&Pair{3, 43}, &Pair{4, 40}, &Pair{5, 37}, // done
+		&Pair{43, 50}, &Pair{40, 49}, &Pair{37, 48}, // done
+		&Pair{48, 25}, &Pair{49, 22}, &Pair{50, 19}, // done
+		&Pair{25, 5}, &Pair{22, 4}, &Pair{19, 3}, // done
+	}
+	return cube.exchange(pairs)
+}
+
+// Represents a "small r" move.
+func (cube Cube) Rs() Cube {
+	return cube.R().Mc()
+}
+
+// Represents a "small r'" move.
+func (cube Cube) Rsc() Cube {
+	return cube.Rc().M()
+}
+
+// Represents a "small l" move.
+func (cube Cube) Ls() Cube {
+	return cube.L().M()
+}
+
+// Represents a "small l'" move.
+func (cube Cube) Lsc() Cube {
+	return cube.Lc().Mc()
+}
+
+// Represents a "small f" move.
+func (cube Cube) Fs() Cube {
+	return cube.F().S()
+}
+
+// Represents a "small f'" move.
+func (cube Cube) Fsc() Cube {
+	return cube.Fc().Sc()
+}
+
+
