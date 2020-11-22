@@ -1,0 +1,20 @@
+package oll
+
+import (
+	"fmt"
+	"../rubik"
+)
+
+// Mapping from Letter to alg name
+
+func PLLCase(n int) rubik.Cube {
+	return pllCases[n].Copy()
+}
+
+var (
+	pllCases = []rubik.Cube{
+		rubik.NewSolvedCube(), // 0: Case 0 is the solved OLL
+		case1(rubik.NewSolvedCube()),
+	}
+)
+

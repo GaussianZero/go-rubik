@@ -1,12 +1,14 @@
 package rubik
 
 import (
+	"fmt"
 	"strings"
 )
 
 // Representation of the Rubik's Cube.
 
 // Faces colors.
+type Color rune
 const (
 	BLUE   = 'b'
 	WHITE  = 'w'
@@ -23,6 +25,100 @@ type Move string
 var Moves = []Move{
 	UP, UP_COUNTER, DOWN, DOWN_COUNTER, LEFT, LEFT_COUNTER,
 	RIGHT, RIGHT_COUNTER, FRONT, FRONT_COUNTER, BACK, BACK_COUNTER,
+}
+var counterMoves = map[Move]Move {
+	UP: UP_COUNTER,
+	RIGHT: RIGHT_COUNTER,
+	LEFT: LEFT_COUNTER,
+	DOWN: DOWN_COUNTER,
+	FRONT: FRONT_COUNTER,
+	BACK: BACK_COUNTER,
+}
+
+func IsCounter(m1, m2 Move) bool {
+	return counterMoves[m1] == m2 || counterMoves[m2] == m1
+}
+
+// Edge vs corner
+type Shape string
+const (
+	EDGE = "edge"
+	CORNER = "corner"
+	CENTER = "center"
+)
+
+type Piece struct {
+	Shape Shape
+	Colors []Color
+}
+
+// Note - yellow is on bottom
+var f2lPieces = []Piece{
+	Piece{EDGE, []Color{GREEN, RED}},
+	Piece{EDGE, []Color{GREEN, YELLOW}},
+	Piece{EDGE, []Color{GREEN, ORANGE}},
+	Piece{EDGE, []Color{RED,BLUE}},
+	Piece{EDGE, []Color{RED,YELLOW}},
+	Piece{EDGE, []Color{BLUE, ORANGE}},
+	Piece{EDGE, []Color{BLUE, YELLOW}},
+	Piece{EDGE, []Color{ORANGE, YELLOW}},
+	Piece{CORNER, []Color{YELLOW,RED,GREEN}},
+	Piece{CORNER, []Color{YELLOW,RED,BLUE}},
+	Piece{CORNER, []Color{YELLOW,BLUE,ORANGE}},
+	Piece{CORNER, []Color{YELLOW,ORANGE,GREEN}},
+}
+
+// Represents a "location" on the cube, at which a piece can be. Locations have Shapes too (edge, corner, center)
+type Location struct {
+	Shape Shape
+	Indices []int // The array of indexes of this "location"
+}
+
+
+// Orientation is clockwise from facing W from the top, then facing Y after rotating like x2
+var corners = []Location{
+	// W corners
+	Location{CORNER, []int{2,20,27}},
+	Location{CORNER, []int{8,11,18}},
+	Location{CORNER, []int{6,9,38}},
+	Location{CORNER, []int{0,29,36}},
+	// Y corners
+	Location{CORNER, []int{17,24,47}},
+	Location{CORNER, []int{26,33,53}},
+	Location{CORNER, []int{35,42,51}},
+	Location{CORNER, []int{15,44,45}},
+}
+
+var centers = []Location{
+	
+}
+
+// listed in orientation of clockwise when facing each face. In order of faces W, G, R, B, O, Y. no dupes.
+var edges = []Location{
+	// W edges
+	Location{EDGE, []int{1,28}},
+	Location{EDGE, []int{5,19}},
+	Location{EDGE, []int{7,10}},
+	Location{EDGE, []int{3,37}},
+
+	// G edges
+	Location{EDGE, []int{14,21}},
+	Location{EDGE, []int{16,46}},
+	Location{EDGE, []int{12,41}},
+
+	// R edges
+	Location{EDGE, []int{23,30}},
+	Location{EDGE, []int{25,50}},
+
+	// B edges
+	Location{EDGE, []int{32,39}},
+	Location{EDGE, []int{34,52}},
+
+	// G edges
+	Location{EDGE, []int{43,48}},
+
+
+	
 }
 
 const (
@@ -62,7 +158,7 @@ const (
 //             45 46 47
 //             48 49 50
 //             51 52 53
-type Cube []rune
+type Cube []Color
 
 // During a move, a facet is moved `From` `To`.
 type Pair struct {
@@ -82,17 +178,17 @@ func NewCube(s string) Cube {
 	if len(stripped) != 9*6 {
 		panic("Not a valid cube: " + s)
 	}
-	cube := make([]rune, 9*6)
+	cube := make([]Color, 9*6)
 	for i, c := range stripped {
-		cube[i] = c
+		cube[i] = Color(c)
 	}
 	return cube
 }
 
 // Build a new solved Cube.
 func NewSolvedCube() Cube {
-	cube := make([]rune, 9*6)
-	colors := []rune{WHITE, GREEN, RED, BLUE, ORANGE, YELLOW}
+	cube := make([]Color, 9*6)
+	colors := []Color{WHITE, GREEN, RED, BLUE, ORANGE, YELLOW}
 	for i, color := range colors {
 		for j := 0; j < 9; j++ {
 			cube[i*9+j] = color
@@ -115,7 +211,7 @@ func (cube Cube) String() string {
 
 // Return `true` if the given face is solved,
 // aka made of a unique color.
-func faceIsSolved(face []rune) bool {
+func faceIsSolved(face []Color) bool {
 	ref := face[0]
 	for _, color := range face {
 		if color != ref {
@@ -148,7 +244,7 @@ func (cube Cube) Equals(other Cube) bool {
 
 // Clone a cube.
 func (cube Cube) Copy() Cube {
-	clone := make([]rune, len(cube))
+	clone := make([]Color, len(cube))
 	copy(clone, cube)
 	return clone
 }
@@ -419,4 +515,97 @@ func (cube Cube) Fsc() Cube {
 	return cube.Fc().Sc()
 }
 
+func (cube Cube) ColorAt(n int) Color {
+	// TODO Implement
+	return cube[n]
+}
 
+func pieceMatches(e Location, p Piece, c Cube) bool {
+	//
+	for _, index := range e.Indices {
+		//fmt.Println("Checking if piece at index ", index, " matches")
+		colorFound := false
+		for _, color := range p.Colors {
+			if c.ColorAt(index) == color {
+				colorFound = true
+			}
+		}
+		if !colorFound {
+			return false
+		}
+	}
+	//fmt.Println("matches!")
+	return true
+}
+
+func isInSameSlotAndOrientation(p Piece, c, d Cube) bool {
+	fmt.Println("check piece!")
+	var pieces []Location
+	switch(p.Shape) {
+	case EDGE:
+		pieces = edges
+	case CORNER:
+		pieces = corners
+	case CENTER:
+		pieces = centers
+	}
+	for _, e := range pieces {
+		//fmt.Println("checking pieces")
+		if !pieceMatches(e, p, c) {
+			continue
+		}
+
+		// We found our piece in cube C, check if location and orientation of the piece match in C and D.
+		colorsMatch := true
+		for _, location := range e.Indices {
+			//fmt.Println("checking loc: ", location)
+			if c.ColorAt(location) != d.ColorAt(location) {
+				colorsMatch = false
+			}
+		}
+		if !colorsMatch {
+			return false
+		}
+	}
+	return true
+}
+
+func isCornerInSameSlot(p Piece, c, d Cube) bool {
+	return false
+}
+
+func isCenterInSameSlot(p Piece, c, d Cube) bool {
+	return false
+}
+
+func (c Color) String() string{
+	return fmt.Sprintf("%c", c)
+}
+
+// F2L related stuff. TODO: move to its own library
+func F2LMatches(c, d Cube) bool {
+	numMatchingPieces := 0
+	for _, piece := range f2lPieces {
+		//fmt.Println("piece: ", piece)
+		if !isInSameSlotAndOrientation(piece, c, d) {
+			fmt.Printf("Pieces Don't Match: %s\n\t%s\n\t%s\n", piece, c, d)
+			fmt.Printf("%d pieces did match.\n", numMatchingPieces)
+			return false
+		} else {
+			numMatchingPieces++
+		}
+	}
+	fmt.Println("WHOA!!!.")
+	return true
+}
+
+func (cube Cube) DebugEdges() {
+	for i, edge := range edges {
+		fmt.Printf("\t%d, {%d,%d} = {%c,%c}\n",
+			i,
+			edge.Indices[0], edge.Indices[1],
+			cube.ColorAt(edge.Indices[0]),
+			cube.ColorAt(edge.Indices[1]),
+		)
+	}
+}
