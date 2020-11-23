@@ -485,6 +485,28 @@ func (cube Cube) Sc() Cube {
 	return cube.exchange(pairs)
 }
 
+func (cube Cube) E() Cube {
+	pairs := []*Pair{
+		&Pair{12, 21}, &Pair{13, 22}, &Pair{14, 23}, // done
+		&Pair{21, 30}, &Pair{22, 31}, &Pair{23, 32}, // done
+		&Pair{30, 39}, &Pair{31, 40}, &Pair{32, 41}, // done
+		&Pair{39, 12}, &Pair{40, 13}, &Pair{41, 14}, // done
+	}
+	return cube.exchange(pairs).rotateRight(45)
+}
+
+func (cube Cube) Ec() Cube {
+	pairs := []*Pair{
+		&Pair{15, 42}, &Pair{16, 43}, &Pair{17, 44},
+		&Pair{42, 33}, &Pair{43, 34}, &Pair{44, 35},
+		&Pair{33, 24}, &Pair{34, 25}, &Pair{35, 26},
+		&Pair{24, 15}, &Pair{25, 16}, &Pair{26, 17},
+	}
+	return cube.exchange(pairs).rotateLeft(45)
+}
+
+
+
 // Represents a "small r" move.
 func (cube Cube) Rs() Cube {
 	return cube.R().Mc()
@@ -514,6 +536,23 @@ func (cube Cube) Fs() Cube {
 func (cube Cube) Fsc() Cube {
 	return cube.Fc().Sc()
 }
+
+func (cube Cube) X() Cube {
+	return cube.R().Mc().Lc()
+}
+
+func (cube Cube) Xc() Cube {
+	return cube.Rc().M().L()
+}
+
+func (cube Cube) X() Cube {
+	return cube.R().Mc().Lc()
+}
+
+
+
+// Below is F2L stuff, probably move to it's own file
+
 
 func (cube Cube) ColorAt(n int) Color {
 	// TODO Implement
